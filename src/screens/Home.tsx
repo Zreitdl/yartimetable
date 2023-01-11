@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-import Logout from "../components/auth/Logout";
-import Center from "../components/utils/Center";
+import Layout from "../components/Layout";
 
 interface Props {}
 
@@ -8,9 +7,9 @@ const Home = ({}: Props) => {
   useEffect(() => {}, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <Center>
-      <Logout />
-    </Center>
+    <Layout>
+      <img alt="timetable" src="images/anjumanya.jpeg"></img>
+    </Layout>
   );
 };
 

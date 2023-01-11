@@ -1,0 +1,24 @@
+.headerContainer {
+  height: 40px;
+  padding: 0 10px;
+  display: flex;
+  border-bottom: 1px solid lightgray;
+  align-items: center;
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .leftLinks {
+    flex: 1;
+  }
+
+  .rightLinks {
+    display: flex;
+    align-items: center;
+
+    * + * {
+      margin-left: 12px;;
+    }
+  }
+}
