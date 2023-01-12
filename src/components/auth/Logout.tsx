@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Button } from "@mui/material";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../config/firebase";
+import { blue } from "@mui/material/colors";
 
 interface Props {
   navigateTo?: string;
@@ -25,9 +25,10 @@ const Logout = ({ navigateTo = "/login" }: Props) => {
 
   return (
     <div>
-      <Button disabled={disabled} onClick={logout}>
+      {/* TODO: Link component */}
+      <div style={{color: blue[300], cursor: 'pointer'}} onClick={logout}>
         Logout
-      </Button>
+      </div>
     </div>
   );
 };

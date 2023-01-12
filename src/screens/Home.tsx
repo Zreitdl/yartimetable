@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import Layout from "../components/Layout";
+import TimetableWithControls from "../components/TimetableWithControls";
 
 interface Props {}
 
@@ -8,7 +9,7 @@ const Home = ({}: Props) => {
 
   return (
     <Layout>
-      <img alt="timetable" src="images/anjumanya.jpeg"></img>
+      <TimetableWithControls />
     </Layout>
   );
 };
