@@ -1,5 +1,7 @@
-import Home from "../screens/Home";
+import TimetableRecords from "../screens/TimetableRecords";
+import Dashboard from "../screens/Dashboard";
 import Login from "../screens/Login";
+import AddTimetableRecord from "../screens/AddTimetableRecord";
 
 interface RouteType {
   path: string;
@@ -11,8 +13,20 @@ interface RouteType {
 const routes: RouteType[] = [
   {
     path: "",
-    component: Home,
-    name: "Home Screen",
+    component: Dashboard,
+    name: "Dashboard Screen",
+    protected: true,
+  },
+  {
+    path: "/list",
+    component: TimetableRecords,
+    name: "Timetable records list Screen",
+    protected: true,
+  },
+  {
+    path: "/list/add",
+    component: AddTimetableRecord,
+    name: "Add timetable record screen",
     protected: true,
   },
   {

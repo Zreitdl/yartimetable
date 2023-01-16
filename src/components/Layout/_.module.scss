@@ -1,3 +1,19 @@
 .container {
-  padding: 120px 120px 360px;
+  padding: 40px 0 360px;
+  display: flex;
+
+  .sideMenu {
+    // margin-right: 60px;
+    padding: 0 20px;
+
+    a + a {
+      margin-top: 20px;
+    }
+
+  }
+
+  .content {
+    flex: 1;
+    padding: 0 160px;
+  }
 }

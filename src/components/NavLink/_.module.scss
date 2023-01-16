@@ -1,0 +1,17 @@
+@import '../../styles/variables';
+
+.link {
+  display: block;
+  cursor: pointer;
+  color: $primary-color;
+  font-size: $font-size;
+  text-decoration: none;
+
+  &:hover {
+    color: $accent-color-2;
+  }
+}
+
+.active {
+  color: $accent-color-2;
+}

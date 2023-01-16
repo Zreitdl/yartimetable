@@ -5,4 +5,9 @@ export interface Activity {
   uid: string;
   name: string;
   color: Color;
+  description: string;
+
+  dayOfWeek: string, // TODO: change to Date() ?
+  timeFrom: string,
+  timeTo: string,
 }
