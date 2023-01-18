@@ -41,7 +41,6 @@ const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
     e.preventDefault();
     setIsLoading(true);
 
-    console.log(activity);
     addOrUpdateUserTimetableRecord({
       activity: activity,
       duration: duration * 60,

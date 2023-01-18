@@ -45,7 +45,7 @@ const TimetableRecordsList = ({}: Props) => {
   const [documents, setDocuments] = useState<TimetableRecord[]>();
   useEffect(() => {
     getTimetableRecords().then((docs) => {
-      console.log(docs);
+      // console.log(docs);
       setDocuments(docs);
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

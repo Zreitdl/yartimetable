@@ -1,16 +1,13 @@
 import Logout from "../auth/Logout";
 import { auth } from "../../config/firebase";
 
+import cn from "classnames";
+
 import style from "./_.module.scss";
 
-interface Props {}
-
-const Header = () => {
+const Header = (className: { className: string }) => {
   return (
-    <div className={style.headerContainer}>
-      <div className="logo">
-        YarTimetable
-      </div>
+    <div className={cn(style.headerContainer, className)}>
       <div className={style.leftLinks}>
       </div>
       <div className={style.rightLinks}>
