@@ -1,17 +1,12 @@
-import { useEffect } from "react";
-import AddTimetableRecordForm from "../components/AddTimetableRecordForm";
+import AddOrUpdateTimetableRecordForm from "../components/AddOrUpdateTimetableRecordForm";
 import Layout from "../components/Layout";
 
 interface Props {}
 
 const AddTimetableRecord = ({}: Props) => {
-  useEffect(() => {}, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const onSubmit = () => {};
-
   return (
     <Layout>
-      <AddTimetableRecordForm onSubmit={onSubmit}/>
+      <AddOrUpdateTimetableRecordForm/>
     </Layout>
   );
 };

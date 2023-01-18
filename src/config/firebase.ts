@@ -7,10 +7,3 @@ export const firebaseApp = initializeApp(firebaseConfig);
 export const auth = getAuth();
 export const Providers = { google: new GoogleAuthProvider() };
 export const db = getFirestore(firebaseApp);
-
-// export const addActivityRecord = (activity: Activity) => {
-//   addDoc(collection(db, "activities"), {
-//           Subject,
-//           completed: false,
-//       });
-// }

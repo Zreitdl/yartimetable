@@ -1,6 +1,7 @@
 import {
   Button,
   FormControl,
+  IconButton,
   styled,
   Table,
   TableBody,
@@ -10,9 +11,15 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Paper from "@mui/material/Paper";
+import { getTimetableRecords } from "../../utils/firebaseFunctions";
+import { TimetableRecord } from "../../models/TimetableRecord";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import { colorsWithHexValues } from "../../models/Color";
+import { daysOfWeek } from "../../models/DaysOfWeek";
 
 interface Props {}
 
@@ -35,7 +42,13 @@ function createData(
 const rows = [createData("Work", "10:00", "12:00", "Monday")];
 
 const TimetableRecordsList = ({}: Props) => {
-  useEffect(() => {}, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [documents, setDocuments] = useState<TimetableRecord[]>();
+  useEffect(() => {
+    getTimetableRecords().then((docs) => {
+      console.log(docs);
+      setDocuments(docs);
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
@@ -49,17 +62,42 @@ const TimetableRecordsList = ({}: Props) => {
               <StyledTableCell align="right">Start time</StyledTableCell>
               <StyledTableCell align="right">End time</StyledTableCell>
               <StyledTableCell align="right">Day of week</StyledTableCell>
+              <StyledTableCell align="right"></StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
-              <TableRow key={row.activity}>
+            {documents?.map((row) => (
+              <TableRow key={row.activity + row.uid + row.startTime}>
                 <TableCell component="th" scope="row">
-                  {row.activity}
+                  <span
+                    style={{
+                      backgroundColor:
+                        colorsWithHexValues[row.color].hexValues.colorHex,
+                      color: colorsWithHexValues[row.color].hexValues.textHex,
+                      border:
+                        "1px solid " +
+                        colorsWithHexValues[row.color].hexValues.borderHex,
+                      borderRadius: "2px",
+                      padding: "2px 10px",
+                      marginRight: "10px",
+                      display: "inline-block",
+                      position: "relative",
+                    }}
+                  >
+                    {row.activity}
+                  </span>
                 </TableCell>
                 <TableCell align="right">{row.startTime}</TableCell>
                 <TableCell align="right">{row.endTime}</TableCell>
-                <TableCell align="right">{row.dayOfWeek}</TableCell>
+                <TableCell align="right">{daysOfWeek[row.dayOfWeek].name}</TableCell>
+                <TableCell align="right">
+                  <IconButton aria-label="edit">
+                    <EditIcon color="primary" />
+                  </IconButton>
+                  <IconButton aria-label="delete">
+                    <DeleteIcon color="warning" />
+                  </IconButton>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
