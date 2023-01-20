@@ -1,9 +1,74 @@
-.week {
+.weekWithHeadingsContainer {
   width: 100%;
+  display: grid;
+  grid-template-areas:
+    "timeHeading daysHeading"
+    "timeHeading recordsContainer";
+  grid-template-columns: 50px 1fr;
+  grid-template-rows: 50px 1fr;
+
+  .daysHeading {
+    grid-area: daysHeading;
+    display: flex;
+    > * {
+      flex: 1;
+    }
+  }
+
+  .timeHeading {
+    grid-area: timeHeading;
+    display: flex;
+    flex-direction: column;
+
+    > * {
+      flex: 1;
+
+      &:first-child {
+        height: 50px;
+        width: 100%;
+        flex: 0 0 50px;
+      }
+    }
+  }
+}
+
+.recordsContainer {
+  grid-area: recordsContainer;
+  //width: 100%;
   max-width: 1200px;
   display: flex;
   border-top: 1px solid lightblue;
   border-right: 1px solid lightblue;
+  position: relative;
+
+  .recordsTable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+
+    .record {
+      height: 0.3472%;
+      padding: 0 5px;
+
+      .recordInner {
+        height: 100%;
+        width: 100%;
+        position: relative;
+
+        .text {
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          z-index: 1;
+        }
+      }
+    }
+  }
 
   .dayCol {
     flex: 1;

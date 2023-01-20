@@ -20,6 +20,7 @@ interface Props {
 
 const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
   // TODO: load timetableRecord if it is UPDATE request
+  // TODO: change duration, startTime, endTime to minutes
   const navigate = useNavigate();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -45,9 +46,10 @@ const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
       activity: activity,
       duration: duration * 60,
       dayOfWeek: dayOfWeek,
-      startTime: startTime * 60,
-      endTime: (startTime + duration) * 60,
+      startTime: startTime * 60 + dayOfWeek * 60 * 24,
+      endTime: (startTime + duration) * 60 + dayOfWeek * 60 * 24,
       color: color,
+      uid: ""
     })
       .then((response) => {
         navigate("/list");
