@@ -49,10 +49,10 @@ const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
       startTime: startTime * 60 + dayOfWeek * 60 * 24,
       endTime: (startTime + duration) * 60 + dayOfWeek * 60 * 24,
       color: color,
-      uid: ""
+      id: ""
     })
       .then((response) => {
-        navigate("/list");
+        navigate("/");
       })
       .catch((e) => {
         console.error(e);

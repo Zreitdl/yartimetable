@@ -41,7 +41,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 const TimetableRecordsList = ({}: Props) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [isDeletingLoading, setIsDeletingLoading] = useState(false);
+  // const [isDeletingLoading, setIsDeletingLoading] = useState(false);
   const [deletingDoc, setDeletingDoc] = useState<TimetableRecord>();
 
   const updateDocuments = () => {
@@ -63,7 +63,7 @@ const TimetableRecordsList = ({}: Props) => {
 
   const handleDelete = () => {
     if (deletingDoc) {
-      deleteTimetableRecord(deletingDoc.uid).then(() => {
+      deleteTimetableRecord(deletingDoc.id).then(() => {
         updateDocuments();
         setDeleteDialogOpen(false);
       });
@@ -93,7 +93,7 @@ const TimetableRecordsList = ({}: Props) => {
           </TableHead>
           <TableBody>
             {documents?.map((row) => (
-              <TableRow key={row.uid}>
+              <TableRow key={row.id}>
                 <TableCell component="th" scope="row">
                   <span
                     style={{

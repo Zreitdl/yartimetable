@@ -17,12 +17,12 @@ export const addOrUpdateUserTimetableRecord = async (data: TimetableRecord) => {
     throw new Error("userId can't be empty");
   }
 
-  if (!data.uid) {
-    data.uid = uid(20);
+  if (!data.id) {
+    data.id = uid(20);
   }
 
   return setDoc(
-    doc(db, "users", auth.currentUser?.uid, "timetableRecords", data.uid),
+    doc(db, "users", auth.currentUser?.uid, "timetableRecords", data.id),
     data,
     { merge: true }
   );
@@ -40,7 +40,7 @@ export const getTimetableRecords = async () => {
   const querySnapshot = await getDocs(q);
 
   return querySnapshot.docs.map((doc) => {
-    return { ...(doc.data() as TimetableRecord), uid: doc.id };
+    return { ...doc.data(), id: doc.id } as TimetableRecord;
   });
 };
 

@@ -24,7 +24,7 @@ const routes: RouteType[] = [
     protected: true,
   },
   {
-    path: "/list/add",
+    path: "/add",
     component: AddTimetableRecord,
     name: "Add timetable record screen",
     protected: true,

@@ -1,7 +1,7 @@
 // import { Color } from "./Color";
 
 export interface TimetableRecord {
-  uid: string;
+  id: string;
   activity: string;
   activityId?: string;
   color: number; // from Color enum
