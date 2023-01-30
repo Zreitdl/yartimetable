@@ -1,8 +1,11 @@
 import style from "./_.module.scss";
-import { Color, colorsWithHexValues } from "../../models/Color";
+import { colorsWithHexValues } from "../../models/Color";
 import { useEffect, useState } from "react";
 import { TimetableRecord } from "../../models/TimetableRecord";
-import { getTimetableRecords } from "../../utils/firebaseFunctions";
+import {
+  deleteTimetableRecord,
+  getTimetableRecords,
+} from "../../utils/firebaseFunctions";
 import { getDayTimeFromMinutesFromSunday } from "../../utils/timetableCreationFunctions";
 import CloseIcon from "@mui/icons-material/Close";
 import {
@@ -11,6 +14,8 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Modal,
   Typography,
@@ -18,8 +23,6 @@ import {
 import Center from "../utils/Center";
 import { daysOfWeek } from "../../models/DaysOfWeek";
 import { Link } from "react-router-dom";
-
-interface Props {}
 
 interface CellTimetableRecord {
   doc?: TimetableRecord;
@@ -50,6 +53,37 @@ const getRecord = (i: number, docs: TimetableRecord[]) => {
   }
 };
 
+// const DeleteModal = () => {
+//   const [open, setOpen] = useState(false);
+//   const handleOpen = () => {
+//     setOpen(true);
+//   };
+//   const handleClose = () => {
+//     setOpen(false);
+//   };
+
+//   return (
+//     <>
+//       <Button onClick={handleOpen}>Open Child Modal</Button>
+//       <Modal
+//         hideBackdrop
+//         open={open}
+//         onClose={handleClose}
+//         aria-labelledby="child-modal-title"
+//         aria-describedby="child-modal-description"
+//       >
+//         <Box sx={{ ...style, width: 200 }}>
+//           <h2 id="child-modal-title">Text in a child modal</h2>
+//           <p id="child-modal-description">
+//             Lorem ipsum, dolor sit amet consectetur adipisicing elit.
+//           </p>
+//           <Button onClick={handleClose}>Close Child Modal</Button>
+//         </Box>
+//       </Modal>
+//     </>
+//   );
+// }
+
 const TimetableWithControls = () => {
   const defaultHourSegment = 1;
   let defaultDayHours = [];
@@ -63,7 +97,9 @@ const TimetableWithControls = () => {
     useState<TimetableRecord>();
   const [timetableRecordsCells, setTimetableRecordsCells] =
     useState<CellTimetableRecord[]>();
-  useEffect(() => {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const updateDocuments = () => {
     getTimetableRecords().then((docs) => {
       // console.log(docs);
       // setDocuments(docs);
@@ -74,7 +110,31 @@ const TimetableWithControls = () => {
       }
       setTimetableRecordsCells(timetableRecordsCellsTemp);
     });
+  };
+  useEffect(() => {
+    updateDocuments();
   }, []);
+
+  const onClickDeleteTimetableRecord = () => {
+    console.log("delete");
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (viewableTimetableRecord) {
+      deleteTimetableRecord(viewableTimetableRecord.id).then(() => {
+        updateDocuments();
+        setDeleteDialogOpen(false);
+        setViewModalOpen(false);
+      });
+    } else {
+      throw new Error("There is no deleting doc");
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+  };
 
   const handleViewModalOpen = (doc: TimetableRecord) => {
     setViewableTimetableRecord(doc);
@@ -85,83 +145,130 @@ const TimetableWithControls = () => {
     setViewModalOpen(false);
   };
 
-  // const deleteDialog = (<Dialog></Dialog>);
+  const deleteDialog = viewableTimetableRecord && (
+    <Dialog
+      open={deleteDialogOpen}
+      onClose={handleDeleteCancel}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        {"Delete timetable record?"}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          {viewableTimetableRecord?.activity +
+            " on " +
+            daysOfWeek[viewableTimetableRecord?.dayOfWeek ?? 0].name +
+            " at " +
+            getDayTimeFromMinutesFromSunday(
+              viewableTimetableRecord?.startTime ?? 0
+            )}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleDeleteCancel}>Cancel</Button>
+        <Button variant="contained" onClick={handleDelete} autoFocus>
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 
   const viewTimetableRecordModal = viewableTimetableRecord && (
-    <Modal
-      open={viewModalOpen}
-      onClose={handleViewModalClose}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
-    >
-      <Box sx={modalInnerStyle}>
-        <DialogContent>
-          <IconButton
-            aria-label="close"
-            onClick={handleViewModalClose}
-            sx={{
-              position: "absolute",
-              right: 0,
-              top: 0,
-              color: (theme) => theme.palette.grey[500],
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-          <Box
-            sx={{
-              backgroundColor:
-                colorsWithHexValues[viewableTimetableRecord.color].hexValues
-                  .colorHex,
-
-              border:
-                "1px solid " +
-                colorsWithHexValues[viewableTimetableRecord.color].hexValues
-                  .borderHex,
-              borderRadius: "2px",
-              padding: "2px 10px",
-              marginRight: "10px",
-              display: "inline-block",
-              position: "relative",
-            }}
-          >
-            <Typography
-              color={
-                colorsWithHexValues[viewableTimetableRecord.color].hexValues
-                  .textHex
-              }
-              variant="h6"
-              component="h2"
+    <>
+      <Modal
+        open={viewModalOpen}
+        onClose={handleViewModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={modalInnerStyle}>
+          <DialogContent>
+            <IconButton
+              aria-label="close"
+              onClick={handleViewModalClose}
+              sx={{
+                position: "absolute",
+                right: 0,
+                top: 0,
+                color: (theme) => theme.palette.grey[500],
+              }}
             >
-              {viewableTimetableRecord.activity}
+              <CloseIcon />
+            </IconButton>
+            <Box
+              sx={{
+                backgroundColor:
+                  colorsWithHexValues[viewableTimetableRecord.color].hexValues
+                    .colorHex,
+
+                border:
+                  "1px solid " +
+                  colorsWithHexValues[viewableTimetableRecord.color].hexValues
+                    .borderHex,
+                borderRadius: "2px",
+                padding: "2px 10px",
+                marginRight: "10px",
+                display: "inline-block",
+                position: "relative",
+              }}
+            >
+              <Typography
+                color={
+                  colorsWithHexValues[viewableTimetableRecord.color].hexValues
+                    .textHex
+                }
+                variant="h6"
+                component="h2"
+              >
+                {viewableTimetableRecord.activity}
+              </Typography>
+            </Box>
+            <Typography sx={{ mt: 2 }}>
+              {getDayTimeFromMinutesFromSunday(
+                viewableTimetableRecord.startTime
+              ) +
+                " -- " +
+                getDayTimeFromMinutesFromSunday(
+                  viewableTimetableRecord.endTime
+                ) +
+                " on " +
+                daysOfWeek[viewableTimetableRecord.dayOfWeek].name}
             </Typography>
-          </Box>
-          <Typography sx={{ mt: 2 }}>
-            {getDayTimeFromMinutesFromSunday(
-              viewableTimetableRecord.startTime
-            ) +
-              " -- " +
-              getDayTimeFromMinutesFromSunday(viewableTimetableRecord.endTime) +
-              " on " +
-              daysOfWeek[viewableTimetableRecord.dayOfWeek].name}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button color="error" variant="outlined" autoFocus>
-            Delete
-          </Button>
-          <Button color="primary" variant="contained" autoFocus>
-            Edit
-          </Button>
-        </DialogActions>
-      </Box>
-    </Modal>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              color="error"
+              variant="outlined"
+              onClick={() => onClickDeleteTimetableRecord()}
+            >
+              Delete
+            </Button>
+            <Link
+              to={"/edit/" + viewableTimetableRecord.id}
+              style={{ textDecoration: "none", marginLeft: "10px" }}
+            >
+              <Button color="primary" variant="contained" autoFocus>
+                Edit
+              </Button>
+            </Link>
+          </DialogActions>
+        </Box>
+      </Modal>
+      {deleteDialog}
+    </>
   );
 
   return (
     <>
       {viewTimetableRecordModal}
       <Box sx={{ display: "flex", mb: 2, justifyContent: "end" }}>
+      {/* <Link to="/settings" style={{ textDecoration: "none", marginRight: "10px" }}> */}
+          <Button disabled variant="outlined" color="primary">
+            Settings
+          </Button>
+        {/* </Link> */}
         <Link to="/add" style={{ textDecoration: "none" }}>
           <Button variant="outlined" color="primary">
             Add new
@@ -172,7 +279,7 @@ const TimetableWithControls = () => {
         <div className={style.timeHeading}>
           <div></div>
           {defaultDayHours.map((hour) => (
-            <div className={style.hourSegment}>
+            <div key={"dayHour__" + hour} className={style.hourSegment}>
               {getDayTimeFromMinutesFromSunday(hour * 60)}
             </div>
           ))}

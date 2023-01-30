@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import Layout from "../components/Layout";
-import TimetableWithControls from "../components/TimetableWithControls";
+import TimetableWithControls from "../components/TimetableWithControls/TimetableWithControls";
 
 interface Props {}
 

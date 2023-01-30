@@ -6,7 +6,7 @@ interface Props {}
 const AddTimetableRecord = ({}: Props) => {
   return (
     <Layout>
-      <AddOrUpdateTimetableRecordForm/>
+      <AddOrUpdateTimetableRecordForm isEdit={false}/>
     </Layout>
   );
 };

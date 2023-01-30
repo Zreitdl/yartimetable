@@ -49,7 +49,7 @@ const TimetableRecordsList = ({}: Props) => {
       // console.log(docs);
       setDocuments(docs);
     });
-  }
+  };
 
   const [documents, setDocuments] = useState<TimetableRecord[]>();
   useEffect(() => {
@@ -128,7 +128,7 @@ const TimetableRecordsList = ({}: Props) => {
                   </IconButton>
                   <IconButton
                     aria-label="delete"
-                    onClick={(e) => onClickDeleteTimetableRecord(row)}
+                    onClick={() => onClickDeleteTimetableRecord(row)}
                   >
                     <DeleteIcon color="warning" />
                   </IconButton>

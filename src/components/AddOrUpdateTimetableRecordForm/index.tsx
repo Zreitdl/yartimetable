@@ -1,5 +1,6 @@
 import {
   Box,
+  CircularProgress,
   FormControl,
   InputLabel,
   MenuItem,
@@ -7,23 +8,31 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { LoadingButton } from "@mui/lab";
 import { Color, colorsWithHexValues } from "../../models/Color";
-import { addOrUpdateUserTimetableRecord } from "../../utils/firebaseFunctions";
+import {
+  addOrUpdateUserTimetableRecord,
+  getTimetableRecord,
+} from "../../utils/firebaseFunctions";
 import { daysOfWeek } from "../../models/DaysOfWeek";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import Center from "../utils/Center";
 
 interface Props {
-  timetableRecordId?: string;
+  isEdit: boolean;
+  editableTimetableRecordId?: string;
 }
 
-const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
+const AddOrUpdateTimetableRecordForm = (props: Props) => {
+  const { isEdit, editableTimetableRecordId } = props;
   // TODO: load timetableRecord if it is UPDATE request
   // TODO: change duration, startTime, endTime to minutes
+
   const navigate = useNavigate();
-  
+
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingEditableRecord, setIsLoadingEditableRecord] = useState(true);
   const [activity, setActivity] = useState("");
   const [duration, setDuration] = useState(1);
   const [dayOfWeek, setDayOfWeek] = useState(0);
@@ -38,6 +47,24 @@ const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
     defaultDayHours.push(i);
   }
 
+  useEffect(() => {
+    if (isEdit && editableTimetableRecordId) {
+      loadTimetableRecord(editableTimetableRecordId);
+    }
+  }, []);
+
+  const loadTimetableRecord = (id: string) => {
+    getTimetableRecord(id).then((record) => {
+      console.log(record);
+      setIsLoadingEditableRecord(false);
+      setActivity(record.activity);
+      setDuration(Math.trunc(record.duration / 60));
+      setDayOfWeek(record.dayOfWeek);
+      setStartime(Math.trunc((record.startTime - record.dayOfWeek * 24 * 60) / 60));
+      setColor(record.color);
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -49,7 +76,7 @@ const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
       startTime: startTime * 60 + dayOfWeek * 60 * 24,
       endTime: (startTime + duration) * 60 + dayOfWeek * 60 * 24,
       color: color,
-      id: ""
+      id: editableTimetableRecordId || "",
     })
       .then((response) => {
         navigate("/");
@@ -60,11 +87,17 @@ const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
       });
   };
 
-  return (
+  return !isLoadingEditableRecord || !isEdit ? (
     <>
-      <Typography variant="h6" color="inherit" noWrap>
-        Add timetable record
-      </Typography>
+      {isEdit ? (
+        <Typography variant="h6" color="inherit" noWrap>
+          Edit timetable record
+        </Typography>
+      ) : (
+        <Typography variant="h6" color="inherit" noWrap>
+          Add timetable record
+        </Typography>
+      )}
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
         <TextField
           margin="normal"
@@ -74,6 +107,7 @@ const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
           label="Activity"
           name="activity"
           autoFocus
+          value={activity}
           onChange={(e) => setActivity(e.target.value as string)}
         />
         <FormControl margin="normal" fullWidth>
@@ -172,10 +206,14 @@ const AddOrUpdateTimetableRecordForm = ({ timetableRecordId }: Props) => {
           disabled={isLoading}
           sx={{ mt: 3, mb: 2 }}
         >
-          Add
+          {isEdit ? "Edit" : "Add"}
         </LoadingButton>
       </Box>
     </>
+  ) : (
+    <Center height={"200px"}>
+      <CircularProgress />
+    </Center>
   );
 };
 

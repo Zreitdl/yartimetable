@@ -44,6 +44,24 @@ export const getTimetableRecords = async () => {
   });
 };
 
+export const getTimetableRecord = async (uid: string) => {
+  if (!auth.currentUser?.uid) {
+    throw new Error("userId can't be empty");
+  }
+
+  if (!uid) {
+    throw new Error("recordId can't be empty");
+  }
+
+  const docSnapshot = await getDoc(doc(db, "users", auth.currentUser?.uid, "timetableRecords", uid));
+
+  if (!docSnapshot.exists()) {
+    throw new Error("Record not found");
+  }
+
+  return { ...docSnapshot.data(), id: docSnapshot.id } as TimetableRecord;
+};
+
 export const deleteTimetableRecord = async (uid: string) => {
   if (!auth.currentUser?.uid) {
     throw new Error("userId can't be empty");

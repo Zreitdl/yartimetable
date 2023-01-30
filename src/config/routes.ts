@@ -2,6 +2,7 @@ import TimetableRecords from "../screens/TimetableRecords";
 import Dashboard from "../screens/Dashboard";
 import Login from "../screens/Login";
 import AddTimetableRecord from "../screens/AddTimetableRecord";
+import EditTimetableRecordScreen from "../screens/EditTimetableRecordScreen";
 
 interface RouteType {
   path: string;
@@ -27,6 +28,12 @@ const routes: RouteType[] = [
     path: "/add",
     component: AddTimetableRecord,
     name: "Add timetable record screen",
+    protected: true,
+  },
+  {
+    path: "/edit/:id",
+    component: EditTimetableRecordScreen,
+    name: "Edit timetable record screen",
     protected: true,
   },
   {
