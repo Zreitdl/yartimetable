@@ -5,7 +5,7 @@ import { TimetableRecord } from "../../models/TimetableRecord";
 import {
   getTimetableRecords,
 } from "../../utils/firebaseFunctions";
-import { getDayTimeFromMinutesFromSunday } from "../../utils/timetableCreationFunctions";
+import { getDayTimeFromMinutesFromSunday, getTimetableRecordPreviewFromCellNumber, TIMETABLE_RENDER_MINUTES_STEP } from "../../utils/timetableCreationFunctions";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
@@ -67,12 +67,13 @@ const TimetableWithControls = () => {
       // setDocuments(docs);
 
       const timetableRecordsCellsTemp = [];
-      for (let i = 0; i < 24 * 60 * 7; i += 5) {
+      for (let i = 0; i < 24 * 60 * 7; i += TIMETABLE_RENDER_MINUTES_STEP) {
         timetableRecordsCellsTemp.push(getRecord(i, docs));
       }
       setTimetableRecordsCells(timetableRecordsCellsTemp);
     });
   };
+
   useEffect(() => {
     updateDocuments();
   }, []);
@@ -80,6 +81,11 @@ const TimetableWithControls = () => {
   const handleViewModalOpen = (doc: TimetableRecord) => {
     setViewableTimetableRecord(doc);
     setViewModalOpen(true);
+  };
+
+  const handleFreeCellClick = (cellNumber: number) => {
+    setViewableTimetableRecord(getTimetableRecordPreviewFromCellNumber(cellNumber));
+    setIsAddModalOpen(true);
   };
 
   const handleViewModalClose = () => {
@@ -133,6 +139,7 @@ const TimetableWithControls = () => {
             </IconButton>
             <AddOrUpdateTimetableRecordForm
               onSubmitedCallback={onAddSubmitted}
+              editableRecord={viewableTimetableRecord}
               isEdit={false}
             />
           </DialogContent>
@@ -299,7 +306,7 @@ const TimetableWithControls = () => {
                     </div>
                   </div>
                 ) : (
-                  <div key={"record" + i} className={style.record}></div>
+                  <div key={"record" + i} onClick={() => handleFreeCellClick(i)} className={style.record}></div>
                 );
               })}
           </div>

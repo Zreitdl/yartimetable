@@ -42,7 +42,7 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
     editableTimetableRecordId,
     editableRecord,
     onSubmitedCallback,
-    onDeletedCallback
+    onDeletedCallback,
   } = props;
   // TODO: change duration, startTime, endTime to minutes
 
@@ -87,7 +87,7 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
   useEffect(() => {
     if (isEdit && editableTimetableRecordId) {
       loadTimetableRecord(editableTimetableRecordId);
-    } else if (isEdit && editableRecord) {
+    } else if (editableRecord) {
       setIsLoadingEditableRecord(false);
       fillFormWithTimetableRecord(editableRecord);
     }
@@ -309,15 +309,17 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
             </LoadingButton>
           </Box>
         ) : (
-          <LoadingButton
-            type="submit"
-            variant="outlined"
-            loading={isLoading}
-            disabled={isLoading}
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Add
-          </LoadingButton>
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <LoadingButton
+              type="submit"
+              variant="outlined"
+              loading={isLoading}
+              disabled={isLoading}
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Add
+            </LoadingButton>
+          </Box>
         )}
       </Box>
     </>
