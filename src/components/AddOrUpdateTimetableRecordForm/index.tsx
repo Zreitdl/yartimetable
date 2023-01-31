@@ -1,6 +1,12 @@
 import {
   Box,
+  Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
@@ -13,20 +19,29 @@ import { LoadingButton } from "@mui/lab";
 import { Color, colorsWithHexValues } from "../../models/Color";
 import {
   addOrUpdateUserTimetableRecord,
+  deleteTimetableRecord,
   getTimetableRecord,
 } from "../../utils/firebaseFunctions";
 import { daysOfWeek } from "../../models/DaysOfWeek";
 import { useNavigate, useParams } from "react-router-dom";
 import Center from "../utils/Center";
+import { TimetableRecord } from "../../models/TimetableRecord";
+import { getDayTimeFromMinutesFromSunday } from "../../utils/timetableCreationFunctions";
 
 interface Props {
   isEdit: boolean;
   editableTimetableRecordId?: string;
+  editableRecord?: TimetableRecord;
+  onSubmitedCallback?: () => void;
 }
 
 const AddOrUpdateTimetableRecordForm = (props: Props) => {
-  const { isEdit, editableTimetableRecordId } = props;
-  // TODO: load timetableRecord if it is UPDATE request
+  const {
+    isEdit,
+    editableTimetableRecordId,
+    editableRecord,
+    onSubmitedCallback,
+  } = props;
   // TODO: change duration, startTime, endTime to minutes
 
   const navigate = useNavigate();
@@ -34,36 +49,47 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingEditableRecord, setIsLoadingEditableRecord] = useState(true);
   const [activity, setActivity] = useState("");
-  const [duration, setDuration] = useState(1);
+  const [duration, setDuration] = useState(1); // in minutes
   const [dayOfWeek, setDayOfWeek] = useState(0);
-  const [startTime, setStartime] = useState(10);
+  const [startTime, setStartime] = useState(10 * 60); // in minutes from dayStart
   const [color, setColor] = useState(3);
-  // const [color, setColor] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const defaultHourSegment = 1;
 
-  let defaultDayHours = [];
+  const recordId = editableRecord
+    ? editableRecord.id
+    : editableTimetableRecordId || "";
+
+  let defaultDayHours: number[] = [];
+
   for (let i = 0; i < 24; i += defaultHourSegment) {
     defaultDayHours.push(i);
   }
 
-  useEffect(() => {
-    if (isEdit && editableTimetableRecordId) {
-      loadTimetableRecord(editableTimetableRecordId);
-    }
-  }, []);
+  const fillFormWithTimetableRecord = (record: TimetableRecord) => {
+    setActivity(record.activity);
+    setDuration(Math.trunc(record.duration / 60));
+    setDayOfWeek(record.dayOfWeek);
+    setStartime(record.startTime - record.dayOfWeek * 24 * 60);
+    setColor(record.color);
+  };
 
   const loadTimetableRecord = (id: string) => {
     getTimetableRecord(id).then((record) => {
-      console.log(record);
       setIsLoadingEditableRecord(false);
-      setActivity(record.activity);
-      setDuration(Math.trunc(record.duration / 60));
-      setDayOfWeek(record.dayOfWeek);
-      setStartime(Math.trunc((record.startTime - record.dayOfWeek * 24 * 60) / 60));
-      setColor(record.color);
+      fillFormWithTimetableRecord(record);
     });
   };
+
+  useEffect(() => {
+    if (isEdit && editableTimetableRecordId) {
+      loadTimetableRecord(editableTimetableRecordId);
+    } else if (isEdit && editableRecord) {
+      setIsLoadingEditableRecord(false);
+      fillFormWithTimetableRecord(editableRecord);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,12 +99,15 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
       activity: activity,
       duration: duration * 60,
       dayOfWeek: dayOfWeek,
-      startTime: startTime * 60 + dayOfWeek * 60 * 24,
-      endTime: (startTime + duration) * 60 + dayOfWeek * 60 * 24,
+      startTime: startTime + dayOfWeek * 60 * 24,
+      endTime: startTime + duration * 60 + dayOfWeek * 60 * 24,
       color: color,
-      id: editableTimetableRecordId || "",
+      id: recordId,
     })
       .then((response) => {
+        if (onSubmitedCallback) {
+          onSubmitedCallback();
+        }
         navigate("/");
       })
       .catch((e) => {
@@ -87,8 +116,61 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
       });
   };
 
+  const onClickDeleteTimetableRecord = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = () => {
+    if (recordId) {
+      deleteTimetableRecord(recordId).then(() => {
+        setDeleteDialogOpen(false);
+        navigate("/");
+      });
+    } else {
+      throw new Error("There is no doc id to delete");
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+  };
+
+  const deleteDialog = isEdit && (
+    <Dialog
+      open={deleteDialogOpen}
+      onClose={handleDeleteCancel}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        {"Delete timetable record?"}
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          {activity +
+            " on " +
+            daysOfWeek[dayOfWeek ?? 0].name +
+            " at " +
+            getDayTimeFromMinutesFromSunday(startTime ?? 0)}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleDeleteCancel}>Cancel</Button>
+        <Button
+          color="error"
+          variant="contained"
+          onClick={handleDelete}
+          autoFocus
+        >
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+
   return !isLoadingEditableRecord || !isEdit ? (
     <>
+      {deleteDialog}
       {isEdit ? (
         <Typography variant="h6" color="inherit" noWrap>
           Edit timetable record
@@ -138,7 +220,7 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
             onChange={(e) => setStartime(e.target.value as number)}
           >
             {defaultDayHours.map((hour) => (
-              <MenuItem value={hour} key={"start-time-label_" + hour}>
+              <MenuItem value={hour * 60} key={"start-time-label_" + hour}>
                 {Math.trunc(hour) +
                   ":" +
                   (60 * (hour - Math.trunc(hour)) < 10
@@ -199,15 +281,39 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
             ))}
           </Select>
         </FormControl>
-        <LoadingButton
-          type="submit"
-          variant="outlined"
-          loading={isLoading}
-          disabled={isLoading}
-          sx={{ mt: 3, mb: 2 }}
-        >
-          {isEdit ? "Edit" : "Add"}
-        </LoadingButton>
+        {isEdit ? (
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <LoadingButton
+              onClick={() => onClickDeleteTimetableRecord()}
+              color="error"
+              variant="outlined"
+              loading={isLoading}
+              disabled={isLoading}
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Delete
+            </LoadingButton>
+            <LoadingButton
+              type="submit"
+              variant="outlined"
+              loading={isLoading}
+              disabled={isLoading}
+              sx={{ mt: 3, mb: 2, ml: 2 }}
+            >
+              Save changes
+            </LoadingButton>
+          </Box>
+        ) : (
+          <LoadingButton
+            type="submit"
+            variant="outlined"
+            loading={isLoading}
+            disabled={isLoading}
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Add
+          </LoadingButton>
+        )}
       </Box>
     </>
   ) : (

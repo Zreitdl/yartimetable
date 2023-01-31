@@ -3,7 +3,6 @@ import { colorsWithHexValues } from "../../models/Color";
 import { useEffect, useState } from "react";
 import { TimetableRecord } from "../../models/TimetableRecord";
 import {
-  deleteTimetableRecord,
   getTimetableRecords,
 } from "../../utils/firebaseFunctions";
 import { getDayTimeFromMinutesFromSunday } from "../../utils/timetableCreationFunctions";
@@ -11,35 +10,18 @@ import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
   DialogContent,
-  DialogContentText,
-  DialogTitle,
   IconButton,
   Modal,
   Typography,
 } from "@mui/material";
 import Center from "../utils/Center";
-import { daysOfWeek } from "../../models/DaysOfWeek";
-import { Link } from "react-router-dom";
+import AddOrUpdateTimetableRecordForm from "../AddOrUpdateTimetableRecordForm";
 
 interface CellTimetableRecord {
   doc?: TimetableRecord;
   isRecord: boolean;
 }
-
-const modalInnerStyle = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  // border: "2px solid #000",
-  boxShadow: 24,
-  //p: 2,
-};
 
 const getRecord = (i: number, docs: TimetableRecord[]) => {
   const index = docs.findIndex((doc) => {
@@ -53,36 +35,16 @@ const getRecord = (i: number, docs: TimetableRecord[]) => {
   }
 };
 
-// const DeleteModal = () => {
-//   const [open, setOpen] = useState(false);
-//   const handleOpen = () => {
-//     setOpen(true);
-//   };
-//   const handleClose = () => {
-//     setOpen(false);
-//   };
-
-//   return (
-//     <>
-//       <Button onClick={handleOpen}>Open Child Modal</Button>
-//       <Modal
-//         hideBackdrop
-//         open={open}
-//         onClose={handleClose}
-//         aria-labelledby="child-modal-title"
-//         aria-describedby="child-modal-description"
-//       >
-//         <Box sx={{ ...style, width: 200 }}>
-//           <h2 id="child-modal-title">Text in a child modal</h2>
-//           <p id="child-modal-description">
-//             Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-//           </p>
-//           <Button onClick={handleClose}>Close Child Modal</Button>
-//         </Box>
-//       </Modal>
-//     </>
-//   );
-// }
+const modalStyling = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 600,
+  bgcolor: "background.paper",
+  // border: "2px solid #000",
+  boxShadow: 24,
+};
 
 const TimetableWithControls = () => {
   const defaultHourSegment = 1;
@@ -92,12 +54,12 @@ const TimetableWithControls = () => {
   }
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   // const [documents, setDocuments] = useState<TimetableRecord[]>();
   const [viewableTimetableRecord, setViewableTimetableRecord] =
     useState<TimetableRecord>();
   const [timetableRecordsCells, setTimetableRecordsCells] =
     useState<CellTimetableRecord[]>();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const updateDocuments = () => {
     getTimetableRecords().then((docs) => {
@@ -115,27 +77,6 @@ const TimetableWithControls = () => {
     updateDocuments();
   }, []);
 
-  const onClickDeleteTimetableRecord = () => {
-    console.log("delete");
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDelete = () => {
-    if (viewableTimetableRecord) {
-      deleteTimetableRecord(viewableTimetableRecord.id).then(() => {
-        updateDocuments();
-        setDeleteDialogOpen(false);
-        setViewModalOpen(false);
-      });
-    } else {
-      throw new Error("There is no deleting doc");
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteDialogOpen(false);
-  };
-
   const handleViewModalOpen = (doc: TimetableRecord) => {
     setViewableTimetableRecord(doc);
     setViewModalOpen(true);
@@ -145,34 +86,54 @@ const TimetableWithControls = () => {
     setViewModalOpen(false);
   };
 
-  const deleteDialog = viewableTimetableRecord && (
-    <Dialog
-      open={deleteDialogOpen}
-      onClose={handleDeleteCancel}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">
-        {"Delete timetable record?"}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          {viewableTimetableRecord?.activity +
-            " on " +
-            daysOfWeek[viewableTimetableRecord?.dayOfWeek ?? 0].name +
-            " at " +
-            getDayTimeFromMinutesFromSunday(
-              viewableTimetableRecord?.startTime ?? 0
-            )}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleDeleteCancel}>Cancel</Button>
-        <Button variant="contained" onClick={handleDelete} autoFocus>
-          Delete
-        </Button>
-      </DialogActions>
-    </Dialog>
+  const handleAddModalOpen = () => {
+    setIsAddModalOpen(true);
+  };
+
+  const handleAddModalClose = () => {
+    setIsAddModalOpen(false);
+  };
+
+  const onEditSubmitted = () => {
+    handleViewModalClose();
+    updateDocuments();
+  };
+
+  const onAddSubmitted = () => {
+    handleAddModalClose();
+    updateDocuments();
+  };
+
+  const addTimetableRecordModal = (
+    <>
+      <Modal
+        open={isAddModalOpen}
+        onClose={handleAddModalClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={modalStyling}>
+          <DialogContent>
+            <IconButton
+              aria-label="close"
+              onClick={handleAddModalClose}
+              sx={{
+                position: "absolute",
+                right: 0,
+                top: 0,
+                color: (theme) => theme.palette.grey[500],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+            <AddOrUpdateTimetableRecordForm
+              onSubmitedCallback={onAddSubmitted}
+              isEdit={false}
+            />
+          </DialogContent>
+        </Box>
+      </Modal>
+    </>
   );
 
   const viewTimetableRecordModal = viewableTimetableRecord && (
@@ -183,7 +144,7 @@ const TimetableWithControls = () => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={modalInnerStyle}>
+        <Box sx={modalStyling}>
           <DialogContent>
             <IconButton
               aria-label="close"
@@ -197,47 +158,13 @@ const TimetableWithControls = () => {
             >
               <CloseIcon />
             </IconButton>
-            <Box
-              sx={{
-                backgroundColor:
-                  colorsWithHexValues[viewableTimetableRecord.color].hexValues
-                    .colorHex,
-
-                border:
-                  "1px solid " +
-                  colorsWithHexValues[viewableTimetableRecord.color].hexValues
-                    .borderHex,
-                borderRadius: "2px",
-                padding: "2px 10px",
-                marginRight: "10px",
-                display: "inline-block",
-                position: "relative",
-              }}
-            >
-              <Typography
-                color={
-                  colorsWithHexValues[viewableTimetableRecord.color].hexValues
-                    .textHex
-                }
-                variant="h6"
-                component="h2"
-              >
-                {viewableTimetableRecord.activity}
-              </Typography>
-            </Box>
-            <Typography sx={{ mt: 2 }}>
-              {getDayTimeFromMinutesFromSunday(
-                viewableTimetableRecord.startTime
-              ) +
-                " -- " +
-                getDayTimeFromMinutesFromSunday(
-                  viewableTimetableRecord.endTime
-                ) +
-                " on " +
-                daysOfWeek[viewableTimetableRecord.dayOfWeek].name}
-            </Typography>
+            <AddOrUpdateTimetableRecordForm
+              onSubmitedCallback={onEditSubmitted}
+              editableRecord={viewableTimetableRecord}
+              isEdit={true}
+            />
           </DialogContent>
-          <DialogActions>
+          {/* <DialogActions>
             <Button
               color="error"
               variant="outlined"
@@ -253,27 +180,30 @@ const TimetableWithControls = () => {
                 Edit
               </Button>
             </Link>
-          </DialogActions>
+          </DialogActions> */}
         </Box>
       </Modal>
-      {deleteDialog}
     </>
   );
 
   return (
     <>
       {viewTimetableRecordModal}
+      {addTimetableRecordModal}
       <Box sx={{ display: "flex", mb: 2, justifyContent: "end" }}>
-      {/* <Link to="/settings" style={{ textDecoration: "none", marginRight: "10px" }}> */}
-          <Button disabled variant="outlined" color="primary">
-            Settings
-          </Button>
+        {/* <Link to="/settings" style={{ textDecoration: "none", marginRight: "10px" }}> */}
+        <Button disabled variant="outlined" color="primary">
+          Settings
+        </Button>
         {/* </Link> */}
-        <Link to="/add" style={{ textDecoration: "none" }}>
-          <Button variant="outlined" color="primary">
-            Add new
-          </Button>
-        </Link>
+        <Button
+          sx={{ml: 2}}
+          variant="outlined"
+          color="primary"
+          onClick={() => handleAddModalOpen()}
+        >
+          Add new
+        </Button>
       </Box>
       <div className={style.weekWithHeadingsContainer}>
         <div className={style.timeHeading}>
