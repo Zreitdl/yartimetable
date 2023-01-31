@@ -164,23 +164,6 @@ const TimetableWithControls = () => {
               isEdit={true}
             />
           </DialogContent>
-          {/* <DialogActions>
-            <Button
-              color="error"
-              variant="outlined"
-              onClick={() => onClickDeleteTimetableRecord()}
-            >
-              Delete
-            </Button>
-            <Link
-              to={"/edit/" + viewableTimetableRecord.id}
-              style={{ textDecoration: "none", marginLeft: "10px" }}
-            >
-              <Button color="primary" variant="contained" autoFocus>
-                Edit
-              </Button>
-            </Link>
-          </DialogActions> */}
         </Box>
       </Modal>
     </>

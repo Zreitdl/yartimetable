@@ -123,9 +123,14 @@ const TimetableRecordsList = ({}: Props) => {
                   {daysOfWeek[row.dayOfWeek].name}
                 </TableCell>
                 <TableCell align="right">
-                  <IconButton aria-label="edit">
-                    <EditIcon color="primary" />
-                  </IconButton>
+                  <Link
+                    style={{ textDecoration: "none" }}
+                    to={"/edit/" + row.id}
+                  >
+                    <IconButton aria-label="edit">
+                      <EditIcon color="primary" />
+                    </IconButton>
+                  </Link>
                   <IconButton
                     aria-label="delete"
                     onClick={() => onClickDeleteTimetableRecord(row)}
@@ -139,7 +144,7 @@ const TimetableRecordsList = ({}: Props) => {
         </Table>
       </TableContainer>
       <FormControl margin="normal">
-        <Link to="add" style={{ textDecoration: "none" }}>
+        <Link to="/add" style={{ textDecoration: "none" }}>
           <Button variant="outlined" color="primary">
             Add new
           </Button>
