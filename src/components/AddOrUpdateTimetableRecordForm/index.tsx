@@ -33,6 +33,7 @@ interface Props {
   editableTimetableRecordId?: string;
   editableRecord?: TimetableRecord;
   onSubmitedCallback?: () => void;
+  onDeletedCallback?: () => void;
 }
 
 const AddOrUpdateTimetableRecordForm = (props: Props) => {
@@ -41,6 +42,7 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
     editableTimetableRecordId,
     editableRecord,
     onSubmitedCallback,
+    onDeletedCallback
   } = props;
   // TODO: change duration, startTime, endTime to minutes
 
@@ -124,6 +126,9 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
     if (recordId) {
       deleteTimetableRecord(recordId).then(() => {
         setDeleteDialogOpen(false);
+        if (onDeletedCallback) {
+          onDeletedCallback();
+        }
         navigate("/");
       });
     } else {

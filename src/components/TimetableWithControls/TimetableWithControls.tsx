@@ -99,6 +99,11 @@ const TimetableWithControls = () => {
     updateDocuments();
   };
 
+  const onDeleteCompleted = () => {
+    handleViewModalClose();
+    updateDocuments();
+  };
+
   const onAddSubmitted = () => {
     handleAddModalClose();
     updateDocuments();
@@ -161,6 +166,7 @@ const TimetableWithControls = () => {
             <AddOrUpdateTimetableRecordForm
               onSubmitedCallback={onEditSubmitted}
               editableRecord={viewableTimetableRecord}
+              onDeletedCallback={onDeleteCompleted}
               isEdit={true}
             />
           </DialogContent>
