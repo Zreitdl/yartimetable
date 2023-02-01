@@ -2,10 +2,12 @@ import style from "./_.module.scss";
 import { colorsWithHexValues } from "../../models/Color";
 import { useEffect, useState } from "react";
 import { TimetableRecord } from "../../models/TimetableRecord";
+import { getTimetableRecords } from "../../utils/firebaseFunctions";
 import {
-  getTimetableRecords,
-} from "../../utils/firebaseFunctions";
-import { getDayTimeFromMinutesFromSunday, getTimetableRecordPreviewFromCellNumber, TIMETABLE_RENDER_MINUTES_STEP } from "../../utils/timetableCreationFunctions";
+  getDayTimeFromMinutesFromSunday,
+  getTimetableRecordPreviewFromCellNumber,
+  TIMETABLE_RENDER_MINUTES_STEP,
+} from "../../utils/timetableCreationFunctions";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Box,
@@ -17,6 +19,7 @@ import {
 } from "@mui/material";
 import Center from "../utils/Center";
 import AddOrUpdateTimetableRecordForm from "../AddOrUpdateTimetableRecordForm";
+import { Link } from "react-router-dom";
 
 interface CellTimetableRecord {
   doc?: TimetableRecord;
@@ -74,8 +77,13 @@ const TimetableWithControls = () => {
     });
   };
 
+  const loadUserSettings = () => {
+    
+  }
+
   useEffect(() => {
     updateDocuments();
+    loadUserSettings();
   }, []);
 
   const handleViewModalOpen = (doc: TimetableRecord) => {
@@ -84,7 +92,9 @@ const TimetableWithControls = () => {
   };
 
   const handleFreeCellClick = (cellNumber: number) => {
-    setViewableTimetableRecord(getTimetableRecordPreviewFromCellNumber(cellNumber));
+    setViewableTimetableRecord(
+      getTimetableRecordPreviewFromCellNumber(cellNumber)
+    );
     setIsAddModalOpen(true);
   };
 
@@ -187,13 +197,16 @@ const TimetableWithControls = () => {
       {viewTimetableRecordModal}
       {addTimetableRecordModal}
       <Box sx={{ display: "flex", mb: 2, justifyContent: "end" }}>
-        {/* <Link to="/settings" style={{ textDecoration: "none", marginRight: "10px" }}> */}
-        <Button disabled variant="outlined" color="primary">
-          Settings
-        </Button>
-        {/* </Link> */}
+        <Link
+          to="/settings"
+          style={{ textDecoration: "none", marginRight: "0px" }}
+        >
+          <Button variant="outlined" color="primary">
+            Settings
+          </Button>
+        </Link>
         <Button
-          sx={{ml: 2}}
+          sx={{ ml: 2 }}
           variant="outlined"
           color="primary"
           onClick={() => handleAddModalOpen()}
@@ -306,7 +319,11 @@ const TimetableWithControls = () => {
                     </div>
                   </div>
                 ) : (
-                  <div key={"record" + i} onClick={() => handleFreeCellClick(i)} className={style.record}></div>
+                  <div
+                    key={"record" + i}
+                    onClick={() => handleFreeCellClick(i)}
+                    className={style.record}
+                  ></div>
                 );
               })}
           </div>

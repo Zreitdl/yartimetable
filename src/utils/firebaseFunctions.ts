@@ -7,10 +7,14 @@ import {
   orderBy,
   query,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { uid } from "uid";
 import { auth, db } from "../config/firebase";
 import { TimetableRecord } from "../models/TimetableRecord";
+import { TimetableSettings, User } from "../models/User";
+import { nameof } from "./nameof";
+import { userDataStore } from "./userStore";
 
 export const addOrUpdateUserTimetableRecord = async (data: TimetableRecord) => {
   if (!auth.currentUser?.uid) {
@@ -44,6 +48,7 @@ export const getTimetableRecords = async () => {
   });
 };
 
+
 export const getTimetableRecord = async (uid: string) => {
   if (!auth.currentUser?.uid) {
     throw new Error("userId can't be empty");
@@ -75,3 +80,36 @@ export const deleteTimetableRecord = async (uid: string) => {
     doc(db, "users", auth.currentUser?.uid, "timetableRecords", uid)
   );
 };
+
+export const getCurrentUserData : () => Promise<User> = async () => {
+  console.log("Retrieving current user data...");
+
+  if (!auth.currentUser) {
+    throw new Error("There is no user logged in");
+  }
+
+  const docSnapshot = await getDoc(doc(db, "users", auth.currentUser.uid));
+
+  if (!docSnapshot.exists()) {
+    throw new Error('There is no user data with provided uid');
+  }
+
+  const currentUserData = { ...docSnapshot.data() as User };
+
+  userDataStore.setData(currentUserData);
+  console.log("user", currentUserData);
+
+  return currentUserData;
+}
+
+export const updateCurrentUserTimetableSettings = async (data: TimetableSettings) => {
+  if (!auth.currentUser) {
+    throw new Error("There is no user logged in");
+  }
+
+  return setDoc(
+    doc(db, "users", auth.currentUser.uid),
+    { [nameof<User>("timetableSettings")]: data },
+    { merge: true }
+  );
+}

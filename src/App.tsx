@@ -7,6 +7,7 @@ import Center from "./components/utils/Center";
 import AuthChecker from "./components/auth/AuthChecker";
 
 import"./global.module.scss";
+import { getCurrentUserData } from "./utils/firebaseFunctions";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -15,6 +16,7 @@ function App() {
     auth.onAuthStateChanged((user) => {
       if (user) {
         console.info("User detected.");
+        getCurrentUserData();
       } else {
         console.info("No user detected");
       }
