@@ -113,7 +113,7 @@ const TimetableWithControls = () => {
 
   const handleFreeCellClick = (cellNumber: number) => {
     setViewableTimetableRecord(
-      getTimetableRecordPreviewFromCellNumber(cellNumber)
+      getTimetableRecordPreviewFromCellNumber(cellNumber, cellSize)
     );
     setIsAddModalOpen(true);
   };
