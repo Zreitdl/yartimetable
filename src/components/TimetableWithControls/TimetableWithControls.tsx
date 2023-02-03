@@ -70,9 +70,6 @@ const TimetableWithControls = () => {
 
   const updateDocuments = () => {
     getTimetableRecords().then((docs) => {
-      // console.log(docs);
-      // setDocuments(docs);
-
       const timetableRecordsCellsTemp = [];
       for (let i = 0; i < 24 * 60 * 7; i += TIMETABLE_RENDER_MINUTES_STEP) {
         timetableRecordsCellsTemp.push(getRecord(i, docs));
@@ -83,14 +80,9 @@ const TimetableWithControls = () => {
 
   const loadUserSettings = () => {
     getCurrentUserData().then((response) => {
-      console.log("cell size 1", cellSize);
       const newCellSize =
         response.timetableSettings.cellSize || DEFAULT_CELL_SIZE;
       setCellSize(newCellSize);
-      console.log(
-        "cell size 2",
-        response.timetableSettings.cellSize || DEFAULT_CELL_SIZE
-      );
 
       let defaultDayHours = [];
       for (let i = 0; i < 24 * 60; i += newCellSize) {

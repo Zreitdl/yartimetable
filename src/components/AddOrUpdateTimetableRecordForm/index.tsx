@@ -26,7 +26,12 @@ import { daysOfWeek } from "../../models/DaysOfWeek";
 import { useNavigate, useParams } from "react-router-dom";
 import Center from "../utils/Center";
 import { TimetableRecord } from "../../models/TimetableRecord";
-import { getDayTimeFromMinutesFromSunday } from "../../utils/timetableCreationFunctions";
+import {
+  getDayTimeFromMinutesFromSunday,
+  TIMETABLE_RENDER_MINUTES_STEP,
+} from "../../utils/timetableCreationFunctions";
+import dayjs, { Dayjs } from "dayjs";
+import { TimePicker } from "@mui/x-date-pickers";
 
 interface Props {
   isEdit: boolean;
@@ -53,7 +58,9 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
   const [activity, setActivity] = useState("");
   const [duration, setDuration] = useState(1); // in minutes
   const [dayOfWeek, setDayOfWeek] = useState(0);
-  const [startTime, setStartime] = useState(10 * 60); // in minutes from dayStart
+  const [startTime, setStartime] = useState<Dayjs | null>(
+    dayjs().set("h", 10).set("minute", 0)
+  ); // in minutes from dayStart
   const [color, setColor] = useState(3);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -73,7 +80,9 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
     setActivity(record.activity);
     setDuration(Math.trunc(record.duration / 60));
     setDayOfWeek(record.dayOfWeek);
-    setStartime(record.startTime - record.dayOfWeek * 24 * 60);
+    const recordHour = Math.trunc((record.startTime - record.dayOfWeek * 24 * 60));
+    const recordMinutes = record.startTime - record.dayOfWeek * 24 * 60 - recordHour * 60;
+    setStartime(dayjs().set("h", recordHour).set("minute", recordMinutes)); 
     setColor(record.color);
   };
 
@@ -82,6 +91,16 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
       setIsLoadingEditableRecord(false);
       fillFormWithTimetableRecord(record);
     });
+  };
+
+  const handleStartTimeChange = (newValue: Dayjs | null) => {
+    if (newValue && newValue?.isValid()) {
+      const minutes =
+        Math.round(newValue.minute() / TIMETABLE_RENDER_MINUTES_STEP) *
+        TIMETABLE_RENDER_MINUTES_STEP;
+      newValue = newValue.set("minutes", minutes);
+    }
+    setStartime(newValue);
   };
 
   useEffect(() => {
@@ -101,8 +120,15 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
       activity: activity,
       duration: duration * 60,
       dayOfWeek: dayOfWeek,
-      startTime: startTime + dayOfWeek * 60 * 24,
-      endTime: startTime + duration * 60 + dayOfWeek * 60 * 24,
+      startTime:
+        (startTime?.hour() ?? 0) * 60 +
+        (startTime?.minute() ?? 0) +
+        dayOfWeek * 60 * 24,
+      endTime:
+        (startTime?.hour() ?? 0) * 60 +
+        (startTime?.minute() ?? 0) +
+        dayOfWeek * 60 * 24 +
+        duration * 60,
       color: color,
       id: recordId,
     })
@@ -156,7 +182,7 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
             " on " +
             daysOfWeek[dayOfWeek ?? 0].name +
             " at " +
-            getDayTimeFromMinutesFromSunday(startTime ?? 0)}
+            startTime?.format("hh:mm")}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -215,8 +241,29 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
           </Select>
         </FormControl>
         <FormControl margin="normal" fullWidth>
-          <InputLabel id="start-time-label">Start time</InputLabel>
-          <Select
+          {/* <InputLabel id="start-time-label">Start time</InputLabel> */}
+          <TimePicker
+            label="Start time"
+            value={startTime}
+            ampm={false}
+            minutesStep={TIMETABLE_RENDER_MINUTES_STEP}
+            onChange={handleStartTimeChange}
+            renderInput={(params: any) => <TextField {...params} />}
+          />
+          {/* <TextField
+        id="time"
+        label="Alarm clock"
+        type="time"
+        defaultValue="07:30"
+        InputLabelProps={{
+          shrink: true,
+        }}
+        inputProps={{
+          step: 300, // 5 min
+        }}
+        sx={{ width: 150 }}
+      /> */}
+          {/* <Select
             fullWidth
             labelId="start-time-label"
             id="start-time-select"
@@ -233,7 +280,7 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
                     : 60 * (hour - Math.trunc(hour)))}
               </MenuItem>
             ))}
-          </Select>
+          </Select> */}
         </FormControl>
         <FormControl margin="normal" fullWidth>
           <InputLabel id="duration-label">Duration</InputLabel>

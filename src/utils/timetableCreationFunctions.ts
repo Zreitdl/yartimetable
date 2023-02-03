@@ -20,12 +20,10 @@ export const getDayOfWeekFromMinutesFromSunday  = (value: number) => {
 
 export const getTimetableRecordPreviewFromCellNumber: (cellNuber: number, cellSize?: number) => TimetableRecord = (cellNumber: number, cellSize?: number) => {
   cellSize = cellSize || DEFAULT_CELL_SIZE;
-  console.log('cellSize', cellSize);
+  
   const minutesFromSunday = cellNumber * TIMETABLE_RENDER_MINUTES_STEP;
   const dayOfWeek = getDayOfWeekFromMinutesFromSunday(minutesFromSunday);
   const startTime = Math.trunc(minutesFromSunday/cellSize) * cellSize;
-
-  console.log("startTime", startTime);
 
   return { id: "", activity: "", color: Color.Purple, dayOfWeek: dayOfWeek, startTime: startTime, endTime: startTime + cellSize, duration: cellSize} as TimetableRecord;
 }
