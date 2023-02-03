@@ -4,6 +4,7 @@ import { TimetableRecord } from "../models/TimetableRecord";
 export const TIMETABLE_RENDER_MINUTES_STEP = 5;
 export const DEFAULT_CELL_SIZE = 60;
 
+// value 120 => return "2:00"
 export const getDayTimeFromMinutesFromSunday = (value: number) => {
   const dayOfWeek = getDayOfWeekFromMinutesFromSunday(value);
   const dayTimeMinutesTotal = value - dayOfWeek * 60 * 24;

@@ -2,8 +2,12 @@ import style from "./_.module.scss";
 import { colorsWithHexValues } from "../../models/Color";
 import { useEffect, useState } from "react";
 import { TimetableRecord } from "../../models/TimetableRecord";
-import { getTimetableRecords } from "../../utils/firebaseFunctions";
 import {
+  getCurrentUserData,
+  getTimetableRecords,
+} from "../../utils/firebaseFunctions";
+import {
+  DEFAULT_CELL_SIZE,
   getDayTimeFromMinutesFromSunday,
   getTimetableRecordPreviewFromCellNumber,
   TIMETABLE_RENDER_MINUTES_STEP,
@@ -49,13 +53,9 @@ const modalStyling = {
   boxShadow: 24,
 };
 
-const TimetableWithControls = () => {
-  const defaultHourSegment = 1;
-  let defaultDayHours = [];
-  for (let i = 0; i < 24; i += defaultHourSegment) {
-    defaultDayHours.push(i);
-  }
+const weekDays = [0, 1, 2, 3, 4, 5, 6];
 
+const TimetableWithControls = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   // const [documents, setDocuments] = useState<TimetableRecord[]>();
@@ -63,6 +63,10 @@ const TimetableWithControls = () => {
     useState<TimetableRecord>();
   const [timetableRecordsCells, setTimetableRecordsCells] =
     useState<CellTimetableRecord[]>();
+
+  const [cellSize, setCellSize] = useState(0);
+
+  const [daySegments, setDaySegments] = useState<number[]>(); // in minutes from daystart
 
   const updateDocuments = () => {
     getTimetableRecords().then((docs) => {
@@ -78,8 +82,24 @@ const TimetableWithControls = () => {
   };
 
   const loadUserSettings = () => {
-    
-  }
+    getCurrentUserData().then((response) => {
+      console.log("cell size 1", cellSize);
+      const newCellSize =
+        response.timetableSettings.cellSize || DEFAULT_CELL_SIZE;
+      setCellSize(newCellSize);
+      console.log(
+        "cell size 2",
+        response.timetableSettings.cellSize || DEFAULT_CELL_SIZE
+      );
+
+      let defaultDayHours = [];
+      for (let i = 0; i < 24 * 60; i += newCellSize) {
+        defaultDayHours.push(i);
+      }
+
+      setDaySegments(defaultDayHours);
+    });
+  };
 
   useEffect(() => {
     updateDocuments();
@@ -217,9 +237,9 @@ const TimetableWithControls = () => {
       <div className={style.weekWithHeadingsContainer}>
         <div className={style.timeHeading}>
           <div></div>
-          {defaultDayHours.map((hour) => (
-            <div key={"dayHour__" + hour} className={style.hourSegment}>
-              {getDayTimeFromMinutesFromSunday(hour * 60)}
+          {daySegments?.map((segment) => (
+            <div key={"dayHourTitle__" + segment} className={style.hourSegment}>
+              {getDayTimeFromMinutesFromSunday(segment)}
             </div>
           ))}
         </div>
@@ -327,41 +347,15 @@ const TimetableWithControls = () => {
                 );
               })}
           </div>
-          <div className={style.dayCol}>
-            {defaultDayHours.map((hour) => (
-              <div className={style.hourSegment}></div>
+          {daySegments &&
+            cellSize &&
+            weekDays.map((day) => (
+              <div key={"weekDay__" + day} className={style.dayCol}>
+                {daySegments?.map((segment) => (
+                  <div key={"weekDay__" + day + "__segment__" + segment} className={style.hourSegment}></div>
+                ))}
+              </div>
             ))}
-          </div>
-          <div className={style.dayCol}>
-            {defaultDayHours.map((hour) => (
-              <div className={style.hourSegment}></div>
-            ))}
-          </div>
-          <div className={style.dayCol}>
-            {defaultDayHours.map((hour) => (
-              <div className={style.hourSegment}></div>
-            ))}
-          </div>
-          <div className={style.dayCol}>
-            {defaultDayHours.map((hour) => (
-              <div className={style.hourSegment}></div>
-            ))}
-          </div>
-          <div className={style.dayCol}>
-            {defaultDayHours.map((hour) => (
-              <div className={style.hourSegment}></div>
-            ))}
-          </div>
-          <div className={style.dayCol}>
-            {defaultDayHours.map((hour) => (
-              <div className={style.hourSegment}></div>
-            ))}
-          </div>
-          <div className={style.dayCol}>
-            {defaultDayHours.map((hour) => (
-              <div className={style.hourSegment}></div>
-            ))}
-          </div>
         </div>
       </div>
       <div className="controls2"></div>

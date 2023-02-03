@@ -3,12 +3,12 @@ import { Box, TextField, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCurrentUserData, updateCurrentUserTimetableSettings } from "../../utils/firebaseFunctions";
-import { userDataStore } from "../../utils/userStore";
+import { DEFAULT_CELL_SIZE } from "../../utils/timetableCreationFunctions";
 
 const TimetableSettingsForm = () => {
   const navigate = useNavigate();
 
-  const [cellSize, setCellSize] = useState(60);
+  const [cellSize, setCellSize] = useState(DEFAULT_CELL_SIZE);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
 
   const loadUserSettings = () => {
