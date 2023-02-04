@@ -56,11 +56,11 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingEditableRecord, setIsLoadingEditableRecord] = useState(true);
   const [activity, setActivity] = useState("");
-  const [duration, setDuration] = useState(
+  const [duration, setDuration] = useState<Dayjs | null>(
     dayjs().set("h", 1).set("minute", 0)
   ); // in minutes
   const [dayOfWeek, setDayOfWeek] = useState(0);
-  const [startTime, setStartime] = useState(
+  const [startTime, setStartime] = useState<Dayjs | null>(
     dayjs().set("h", 10).set("minute", 0)
   ); // in minutes from dayStart
   const [color, setColor] = useState(3);
@@ -110,9 +110,8 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
         Math.round(newValue.minute() / TIMETABLE_RENDER_MINUTES_STEP) *
         TIMETABLE_RENDER_MINUTES_STEP;
       newValue = newValue.set("minutes", minutes);
-    } else {
-      newValue = dayjs().set("hour", 10); //set default
     }
+
     setStartime(newValue);
   };
 
@@ -122,9 +121,8 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
         Math.round(newValue.minute() / TIMETABLE_RENDER_MINUTES_STEP) *
         TIMETABLE_RENDER_MINUTES_STEP;
       newValue = newValue.set("minutes", minutes);
-    } else {
-      newValue = dayjs().set("hour", 10); //set default
     }
+
     setDuration(newValue);
   };
 
@@ -139,10 +137,15 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!duration?.isValid() || !startTime?.isValid()) {
+      return ;
+    }
+
     setIsLoading(true);
 
-    const durationInMinutes = duration.hour() * 60 + duration.minute();
-    const startTimeInMinutes = startTime.hour() * 60 + startTime.minute();
+    const durationInMinutes = duration!.hour() * 60 + duration!.minute();
+    const startTimeInMinutes = startTime!.hour() * 60 + startTime!.minute();
 
     addOrUpdateUserTimetableRecord({
       activity: activity,
