@@ -32,6 +32,7 @@ import {
 } from "../../utils/timetableCreationFunctions";
 import dayjs, { Dayjs } from "dayjs";
 import { TimePicker } from "@mui/x-date-pickers";
+import DurationTimePicker from "../Inputs/DurationTimePicker";
 
 interface Props {
   isEdit: boolean;
@@ -56,9 +57,7 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingEditableRecord, setIsLoadingEditableRecord] = useState(true);
   const [activity, setActivity] = useState("");
-  const [duration, setDuration] = useState<Dayjs | null>(
-    dayjs().set("h", 1).set("minute", 0)
-  ); // in minutes
+  const [duration, setDuration] = useState(60); // in minutes
   const [dayOfWeek, setDayOfWeek] = useState(0);
   const [startTime, setStartime] = useState<Dayjs | null>(
     dayjs().set("h", 10).set("minute", 0)
@@ -80,11 +79,7 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
 
   const fillFormWithTimetableRecord = (record: TimetableRecord) => {
     setActivity(record.activity);
-
-    const durationHour = Math.trunc(record.duration / 60);
-    const durationMinutes = record.duration - durationHour * 60;
-    setDuration(dayjs().set("h", durationHour).set("minute", durationMinutes));
-
+    setDuration(record.duration);
     setDayOfWeek(record.dayOfWeek);
 
     const recordHour = Math.trunc(
@@ -115,13 +110,13 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
     setStartime(newValue);
   };
 
-  const handleDurationChange = (newValue: Dayjs | null) => {
-    if (newValue && newValue?.isValid()) {
-      const minutes =
-        Math.round(newValue.minute() / TIMETABLE_RENDER_MINUTES_STEP) *
-        TIMETABLE_RENDER_MINUTES_STEP;
-      newValue = newValue.set("minutes", minutes);
-    }
+  const handleDurationChange = (newValue: number) => {
+    // if (newValue && newValue?.isValid()) {
+    //   const minutes =
+    //     Math.round(newValue.minute() / TIMETABLE_RENDER_MINUTES_STEP) *
+    //     TIMETABLE_RENDER_MINUTES_STEP;
+    //   newValue = newValue.set("minutes", minutes);
+    // }
 
     setDuration(newValue);
   };
@@ -138,21 +133,24 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!duration?.isValid() || !startTime?.isValid()) {
-      return ;
+    if (!startTime?.isValid()) {
+      return;
+    }
+
+    if (!duration) {
+      return;
     }
 
     setIsLoading(true);
 
-    const durationInMinutes = duration!.hour() * 60 + duration!.minute();
     const startTimeInMinutes = startTime!.hour() * 60 + startTime!.minute();
 
     addOrUpdateUserTimetableRecord({
       activity: activity,
-      duration: durationInMinutes,
+      duration: duration,
       dayOfWeek: dayOfWeek,
       startTime: startTimeInMinutes + dayOfWeek * 60 * 24,
-      endTime: startTimeInMinutes + dayOfWeek * 60 * 24 + durationInMinutes,
+      endTime: startTimeInMinutes + dayOfWeek * 60 * 24 + duration,
       color: color,
       id: recordId,
     })
@@ -275,15 +273,14 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
           />
         </FormControl>
         <FormControl margin="normal" fullWidth>
-        <TimePicker
-            label="Duration"
+          <Typography color="label" variant="caption" sx={{ mb: 1 }}>
+            Duration
+          </Typography>
+          <DurationTimePicker
             value={duration}
-            ampm={false}
-            minTime={dayjs().set("h", 0).set("minute", 5)}
-            maxTime={dayjs().set("h", 23).set("minute", 59)}
-            minutesStep={TIMETABLE_RENDER_MINUTES_STEP}
             onChange={handleDurationChange}
-            renderInput={(params: any) => <TextField {...params} />}
+            title="Hour"
+            id="duration"
           />
         </FormControl>
         <FormControl margin="normal" fullWidth>

@@ -309,7 +309,7 @@ const TimetableWithControls = () => {
                       onClick={() => handleViewModalOpen(record.doc!)}
                     >
                       {i > 0 &&
-                        i < timetableRecordsCells.length &&
+                        i < timetableRecordsCells.length - 1 &&
                         record.isRecord &&
                         timetableRecordsCells[i + 1].isRecord &&
                         timetableRecordsCells[i + 1].doc?.activity ===
