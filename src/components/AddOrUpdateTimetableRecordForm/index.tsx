@@ -56,9 +56,11 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingEditableRecord, setIsLoadingEditableRecord] = useState(true);
   const [activity, setActivity] = useState("");
-  const [duration, setDuration] = useState(1); // in minutes
+  const [duration, setDuration] = useState(
+    dayjs().set("h", 1).set("minute", 0)
+  ); // in minutes
   const [dayOfWeek, setDayOfWeek] = useState(0);
-  const [startTime, setStartime] = useState<Dayjs | null>(
+  const [startTime, setStartime] = useState(
     dayjs().set("h", 10).set("minute", 0)
   ); // in minutes from dayStart
   const [color, setColor] = useState(3);
@@ -78,11 +80,20 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
 
   const fillFormWithTimetableRecord = (record: TimetableRecord) => {
     setActivity(record.activity);
-    setDuration(Math.trunc(record.duration / 60));
+
+    const durationHour = Math.trunc(record.duration / 60);
+    const durationMinutes = record.duration - durationHour * 60;
+    setDuration(dayjs().set("h", durationHour).set("minute", durationMinutes));
+
     setDayOfWeek(record.dayOfWeek);
-    const recordHour = Math.trunc((record.startTime - record.dayOfWeek * 24 * 60));
-    const recordMinutes = record.startTime - record.dayOfWeek * 24 * 60 - recordHour * 60;
-    setStartime(dayjs().set("h", recordHour).set("minute", recordMinutes)); 
+
+    const recordHour = Math.trunc(
+      (record.startTime - record.dayOfWeek * 24 * 60) / 60
+    );
+    const recordMinutes =
+      record.startTime - record.dayOfWeek * 24 * 60 - recordHour * 60;
+    setStartime(dayjs().set("h", recordHour).set("minute", recordMinutes));
+
     setColor(record.color);
   };
 
@@ -99,8 +110,22 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
         Math.round(newValue.minute() / TIMETABLE_RENDER_MINUTES_STEP) *
         TIMETABLE_RENDER_MINUTES_STEP;
       newValue = newValue.set("minutes", minutes);
+    } else {
+      newValue = dayjs().set("hour", 10); //set default
     }
     setStartime(newValue);
+  };
+
+  const handleDurationChange = (newValue: Dayjs | null) => {
+    if (newValue && newValue?.isValid()) {
+      const minutes =
+        Math.round(newValue.minute() / TIMETABLE_RENDER_MINUTES_STEP) *
+        TIMETABLE_RENDER_MINUTES_STEP;
+      newValue = newValue.set("minutes", minutes);
+    } else {
+      newValue = dayjs().set("hour", 10); //set default
+    }
+    setDuration(newValue);
   };
 
   useEffect(() => {
@@ -116,19 +141,15 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
     e.preventDefault();
     setIsLoading(true);
 
+    const durationInMinutes = duration.hour() * 60 + duration.minute();
+    const startTimeInMinutes = startTime.hour() * 60 + startTime.minute();
+
     addOrUpdateUserTimetableRecord({
       activity: activity,
-      duration: duration * 60,
+      duration: durationInMinutes,
       dayOfWeek: dayOfWeek,
-      startTime:
-        (startTime?.hour() ?? 0) * 60 +
-        (startTime?.minute() ?? 0) +
-        dayOfWeek * 60 * 24,
-      endTime:
-        (startTime?.hour() ?? 0) * 60 +
-        (startTime?.minute() ?? 0) +
-        dayOfWeek * 60 * 24 +
-        duration * 60,
+      startTime: startTimeInMinutes + dayOfWeek * 60 * 24,
+      endTime: startTimeInMinutes + dayOfWeek * 60 * 24 + durationInMinutes,
       color: color,
       id: recordId,
     })
@@ -241,7 +262,6 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
           </Select>
         </FormControl>
         <FormControl margin="normal" fullWidth>
-          {/* <InputLabel id="start-time-label">Start time</InputLabel> */}
           <TimePicker
             label="Start time"
             value={startTime}
@@ -250,58 +270,18 @@ const AddOrUpdateTimetableRecordForm = (props: Props) => {
             onChange={handleStartTimeChange}
             renderInput={(params: any) => <TextField {...params} />}
           />
-          {/* <TextField
-        id="time"
-        label="Alarm clock"
-        type="time"
-        defaultValue="07:30"
-        InputLabelProps={{
-          shrink: true,
-        }}
-        inputProps={{
-          step: 300, // 5 min
-        }}
-        sx={{ width: 150 }}
-      /> */}
-          {/* <Select
-            fullWidth
-            labelId="start-time-label"
-            id="start-time-select"
-            value={startTime}
-            label="Start time"
-            onChange={(e) => setStartime(e.target.value as number)}
-          >
-            {defaultDayHours.map((hour) => (
-              <MenuItem value={hour * 60} key={"start-time-label_" + hour}>
-                {Math.trunc(hour) +
-                  ":" +
-                  (60 * (hour - Math.trunc(hour)) < 10
-                    ? "0" + 60 * (hour - Math.trunc(hour))
-                    : 60 * (hour - Math.trunc(hour)))}
-              </MenuItem>
-            ))}
-          </Select> */}
         </FormControl>
         <FormControl margin="normal" fullWidth>
-          <InputLabel id="duration-label">Duration</InputLabel>
-          <Select
-            fullWidth
-            labelId="duration-label"
-            id="duration-select"
-            value={duration}
+        <TimePicker
             label="Duration"
-            onChange={(e) => setDuration(e.target.value as number)}
-          >
-            {defaultDayHours.map((hour) => (
-              <MenuItem value={hour} key={"duration_" + hour}>
-                {Math.trunc(hour) +
-                  ":" +
-                  (60 * (hour - Math.trunc(hour)) < 10
-                    ? "0" + 60 * (hour - Math.trunc(hour))
-                    : 60 * (hour - Math.trunc(hour)))}
-              </MenuItem>
-            ))}
-          </Select>
+            value={duration}
+            ampm={false}
+            minTime={dayjs().set("h", 0).set("minute", 5)}
+            maxTime={dayjs().set("h", 23).set("minute", 59)}
+            minutesStep={TIMETABLE_RENDER_MINUTES_STEP}
+            onChange={handleDurationChange}
+            renderInput={(params: any) => <TextField {...params} />}
+          />
         </FormControl>
         <FormControl margin="normal" fullWidth>
           <InputLabel id="color-label">Color</InputLabel>
